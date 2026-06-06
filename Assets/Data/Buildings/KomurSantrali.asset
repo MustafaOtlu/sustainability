@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83fca7138e62408489e2adff3525ab95, type: 3}
+  m_Name: KomurSantrali
+  m_EditorClassIdentifier: 
+  buildingName: "K\xF6m\xFCr Santrali"
+  category: 5
+  description: "Ucuz ve kesintisiz +100 MW enerji. \xC7ok y\xFCksek kirlilik ve karbon
+    sal\u0131n\u0131m\u0131!"
+  gridWidth: 3
+  gridHeight: 3
+  buildCost: 4000
+  maintenanceCostPerTick: 100
+  energyDelta: 100
+  waterDelta: -5
+  taxIncomePerTick: 0
+  populationCapacity: 0
+  airPollutionPerTick: 50
+  waterPollutionPerTick: 0
+  soilPollutionPerTick: 0
+  carbonEmissionPerTick: 40
+  noiseLevel: 40
+  happinessBonus: 0
+  healthBonus: 0
+  effectRadius: 0
+  pollutionAbsorptionPerTick: 0
+  noiseAbsorptionBonus: 0
+  blockoutColor: {r: 0.3, g: 0.2, b: 0.15, a: 1}
+  blockoutHeight: 3
+  canUpgrade: 0
+  maxLevel: 1

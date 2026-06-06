@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83fca7138e62408489e2adff3525ab95, type: 3}
+  m_Name: KucukKonut
+  m_EditorClassIdentifier: 
+  buildingName: "K\xFC\xE7\xFCk Konut"
+  category: 0
+  description: "Tek katl\u0131 k\xFC\xE7\xFCk konut. Az n\xFCfus bar\u0131nd\u0131r\u0131r,
+    d\xFC\u015F\xFCk vergi \xFCretir."
+  gridWidth: 1
+  gridHeight: 1
+  buildCost: 500
+  maintenanceCostPerTick: 0
+  energyDelta: -2
+  waterDelta: -1
+  taxIncomePerTick: 20
+  populationCapacity: 5
+  airPollutionPerTick: 0
+  waterPollutionPerTick: 0
+  soilPollutionPerTick: 0
+  carbonEmissionPerTick: 0
+  noiseLevel: 5
+  happinessBonus: 0
+  healthBonus: 0
+  effectRadius: 0
+  pollutionAbsorptionPerTick: 0
+  noiseAbsorptionBonus: 0
+  blockoutColor: {r: 0.55, g: 0.75, b: 0.95, a: 1}
+  blockoutHeight: 0.8
+  canUpgrade: 1
+  maxLevel: 3

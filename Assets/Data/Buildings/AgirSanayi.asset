@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83fca7138e62408489e2adff3525ab95, type: 3}
+  m_Name: AgirSanayi
+  m_EditorClassIdentifier: 
+  buildingName: "A\u011F\u0131r Sanayi"
+  category: 1
+  description: "Y\xFCksek vergi geliri sa\u011Flar. A\u011F\u0131r kirlilik ve 80
+    dB g\xFCr\xFClt\xFC yayar."
+  gridWidth: 3
+  gridHeight: 3
+  buildCost: 3000
+  maintenanceCostPerTick: 30
+  energyDelta: -15
+  waterDelta: -5
+  taxIncomePerTick: 150
+  populationCapacity: 0
+  airPollutionPerTick: 30
+  waterPollutionPerTick: 15
+  soilPollutionPerTick: 5
+  carbonEmissionPerTick: 20
+  noiseLevel: 80
+  happinessBonus: 0
+  healthBonus: 0
+  effectRadius: 0
+  pollutionAbsorptionPerTick: 0
+  noiseAbsorptionBonus: 0
+  blockoutColor: {r: 0.35, g: 0.35, b: 0.35, a: 1}
+  blockoutHeight: 2
+  canUpgrade: 0
+  maxLevel: 1

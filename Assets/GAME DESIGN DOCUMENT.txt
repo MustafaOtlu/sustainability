@@ -1,0 +1,673 @@
+GAME DESIGN DOCUMENT (GDD)
+Proje Kodu: UT-SIM-2026
+Sürüm: 2.6.0-PROD
+Motor: Unity 6 (LTS) / C# 12
+1. OYUN KİMLİĞİ
+•	Oyun Adı Önerileri: Symbiosis: Urban Grid, Stratum: Eco-Engine, Metropolis: Carbon Zero, Ecoregion: Axis
+•	Tür: Grid tabanlı Şehir Kurma (City Builder) ve Sistem Yönetimi (Management) Simülasyonu.
+•	Tematik Yapı: Yakın gelecek. Endüstriyel büyüme ile sürdürülebilir yeşil teknolojiler arasındaki denge ve kaynak yönetimi.
+•	Platform: PC (Steam)
+•	Oyuncu Perspektifi: İzometrik / Top-Down Ortografik Görünüm.
+2. OYUNUN ANA AMACI
+Oyuncu Neyi Yönetir?
+Oyuncu; fiziksel altyapıyı (yollar, enerji ve su şebekeleri), imar planlarını (konut, sanayi, ticaret zonları) ve ekolojik sistemleri (karbon salınımı, hava/su kirliliği, gürültü kontrolü) yönetir.
+Başarı Kriteri
+Şehrin başarılı sayılması için Sürdürülebilir Dengenin yakalanması gerekir:
+1.	Karbon Nötrlük: Karbon emisyonunun, yeşil alanların temizleme kapasitesinin altında kalması.
+2.	Sosyo-Ekolojik Stabilizasyon: Şehir genelindeki vatandaş memnuniyetinin %80 üzerinde tutulması ve göç dengesinin korunması.
+3.	Mali Sürdürülebilirlik: Şehrin vergi gelirlerinin; altyapı, kamu binaları bakım ve işletim giderlerini tamamen karşılaması.
+3. CORE GAME LOOP (TEMEL OYNANIŞ DÖNGÜSÜ)
+
+
+
+
+
+
+
+
+•	Ekonomi Döngüsü: Konutlardan ve sanayiden toplanan vergilerle altyapı finanse edilir. Finansal açık oluşursa kamu binaları deaktif olur.
+•	Nüfus Döngüsü: Temiz çevre ve yüksek memnuniyet şehre göçü tetikler. Nüfus arttıkça konut ihtiyacı doğar ve vergi tabanı genişler.
+•	Çevre Döngüsü: Fabrikalar kirlilik üretir. Kirlilik arttıkça vatandaşların sağlığı düşer. Yeşil alan yatırımlarıyla kirlilik sönümlenir.
+•	Trafik ve Yoğunluk Döngüsü: Binalar yollara araç gönderir. Yol kapasitesi aşılınca trafik kilitlenir; bu da lojistik gecikmelere, lokal gürültüye ve mutsuzluğa yol açar.
+4. ANA SİSTEMLER
+4.1 Kaynak Sistemleri
+Tüm kaynaklar her simülasyon adımında (Tick) güncellenir.
+1.	Para (Eko-Para):
+o	Üretim: Konut, Ticari ve Endüstri binalarından alınan sabit vergiler.
+o	Tüketim: Kamu binalarının sabit işletim masrafları ve yolların kare başına bakım maliyeti.
+o	Etki: Para sıfırın altına düşerse şehir iflas sürecine girer, kamu hizmetleri durur.
+2.	Enerji (MW):
+o	Üretim: Güneş veya kömür santrallerinin toplam çıktısı.
+o	Tüketim: Şehirdeki tüm aktif binaların taban tüketimi.
+o	Etki: Enerji yetersizse karartma (blackout) yaşanır; binalar çalışmaz, memnuniyet hızla düşer.
+3.	Su ($m^3$):
+o	Üretim: Su pompalarının kapasitesi (lokal su kirliliği oranında verim düşer).
+o	Tüketim: Konut ve sanayinin su ihtiyacı.
+o	Etki: Su kesilirse sağlık endeksi çöker, salgın hastalıklar başlar.
+4.	Nüfus:
+o	Üretim: Şehrin genel memnuniyet oranına göre gelen göç ve doğal doğumlar.
+o	Etki: Nüfus, binaların tam kapasiteyle vergi üretmesi için temel çarpandır. Nüfus azaldıkça gelirler doğrusal olarak düşer.
+4.2 Çevre ve Kirlilik Sistemi
+Kirlilik, harita üzerindeki 2D Grid hücrelerinde simüle edilir.
+•	Hava Kirliliği: Ağır sanayi ve termik santraller üretir. Her tick'te komşu hücrelere %15 oranında yayılır. Hücrede park varsa kirlilik azalır.
+•	Su Kirliliği: Arıtması olmayan fabrikalar üretir. Su pompalarına ulaşırsa tüm şehrin sağlık değerini düşürür.
+•	Toprak Kirliliği: Çöplükler ve sanayi atıkları üretir. Toprak kirliliği yüksek olan yerlere konut kurulamaz.
+•	Karbon Salınımı: Şehir genelindeki global bir değerdir. Yüksek karbon salınımı rastgele zamanlarda kuraklık gibi iklim krizlerini tetikler.
+4.3 Vatandaş Sistemi
+Vatandaşlar mahalle grupları (Cohorts) halinde simüle edilir.
+Vatandaş Parametreleri
+•	Mutluluk: [0 - 100] Şehirden genel memnuniyet düzeyi.
+•	Sağlık: [0 - 100] Yaşam süresini ve nüfusun kalıcılığını etkiler.
+Sadeleştirilmiş Memnuniyet Kuralı
+Vatandaş Memnuniyeti = Sağlık - (Hava Kirliliği + Gürültü + Trafik Yoğunluğu)
+Bu parametrelerin ortalaması şehrin Genel Memnuniyet Endeksini oluşturur. Oran düştükçe dışarıya göç başlar ve nihai olarak isyan durumu tetiklenir.
+4.4 Gürültü Kirliliği Sistemi
+Gürültü, kaynaktan uzaklaştıkça kare başına azalarak yayılan bir dalgadır.
+•	Gürültü Kaynakları: Ağır Sanayi (80 dB), Yoğun Yollar (60 dB), Ticari Alanlar (40 dB), Parklar (10 dB).
+•	Sönümlenme: Gürültü, her tile uzaklaştığında 8 dB azalır. Eğer arada "Park" hücresi varsa gürültü ekstra 16 dB düşer (Ağaç bariyeri).
+•	Cezası: Konut bölgelerinde gürültü 55 dB üzerine çıkarsa vatandaşların sağlığı ve mutluluğu kademeli olarak azalır.
+5. BİNA SİSTEMİ
+5.1 Konut Binaları (Residential)
+•	Maliyet / Boyut: 500 Eko-Para / 1x1 Grid (Küçük) veya 2500 Eko-Para / 2x2 Grid (Apartman).
+•	Mekanik: Nüfus barındırır, düzenli vergi üretir. Su ve enerji tüketir. Çevresindeki kirlilik az ve memnuniyet yüksekse otomatik olarak Seviye atlar (Upgrade).
+5.2 Fabrikalar (Industrial)
+•	Ağır Sanayi: Maliyet: 3000 Eko-Para (3x3). Yüksek vergi sağlar. Ancak çevreye ağır hava/su kirliliği ve 80 dB gürültü yayar.
+•	Eko-Teknoloji Fabrikası: Maliyet: 9000 Eko-Para (3x3). Gelişmiş endüstri standardıdır. Yüksek vergi sağlar, kirliliği ve gürültüsü minimumdur ancak yüksek inşa maliyeti gerektirir.
+5.3 Parklar (Environmental)
+•	Küçük Park: Maliyet: 300 Eko-Para (1x1). Bakım: 15 Eko-Para/Tick.
+•	Mekanik: Kirliliği ve gürültüyü absorbe eder. Etki alanındaki (4 tile) konutların mutluluğunu doğrudan artırır.
+5.4 Toplum ve Kültür Merkezleri (Social Infrastructure)
+•	Kültür Merkezi: Maliyet: 4000 Eko-Para (3x2). Bakım: 200 Eko-Para.
+•	Mekanik: Etki alanındaki (8 tile) vatandaşların mutluluk taban değerini doğrudan +20 puan artırır ve sosyal bağları güçlendirerek göçü stabilize eder.
+5.5 Hastaneler (Healthcare Infrastructure)
+•	Bölge Hastanesi: Maliyet: 6000 Eko-Para (4x3). Bakım: 400 Eko-Para.
+•	Mekanik: Tüm şehrin taban sağlık değerini yükseltir, kirlilikten kaynaklanan ölüm ve hastalık oranlarını düşürür.
+5.6 Enerji Santralleri (Power)
+•	Kömür Santrali: Ucuz maliyet (4000 Eko-Para), yüksek ve kesintisiz enerji çıktısı (+100 MW). Ceza: Çok yüksek kirlilik ve karbon salınımı.
+•	Güneş Tarlası: Yüksek maliyet (12000 Eko-Para), temiz enerji (+40 MW). Sadece gündüz çalışır, sıfır kirlilik üretir.
+6. GÖREV SİSTEMİ
+Görevler ScriptableObject tabanlıdır ve Unity Event mimarisiyle tetiklenir.
+1.	Başlangıç: "Şehre İlk Adım" -> 3 adet konut inşa et ve nüfusu 50 kişiye ulaştır. (Ödül: +2000 Eko-Para).
+2.	Orta Seviye: "Yeşil Dönüşüm" -> Ortalama hava kirliliğini %30'un altına indirirken şehre 1 Park ve 1 Hastane kazandır. (Ödül: +5000 Eko-Para).
+3.	İleri Seviye: "Sıfır Karbon" -> Genel memnuniyeti %80 üzerinde tut ve şehirdeki tüm kömür santrallerini yıkarak %100 yenilenebilir enerjiye geç. (Ödül: Sonsuz Sandbox Modu Kilidi).
+7. TRAFİK SİSTEMİ
+•	Yolların sabit bir araç kapasitesi vardır.
+•	Konutlar ile iş alanları (Fabrika/Ticaret) arasında simülasyon her çalıştığında sanal bir yük dağıtılır.
+•	Bir yoldaki yük, kapasitenin %70'ini aşarsa trafik yoğunlaşır (Gürültü ve kirlilik eklenir). %100'ü aşarsa trafik kilitlenir; o yolu kullanan fabrikaların üretim verimliliği %80 düşer.
+8. SİMÜLASYON MODELİ (TICK PIPELINE)
+Oyun her 5 gerçek saniyede bir 1 "Tick" (Oyun Günü) ilerler. Sıralama şu şekildedir:
+1.	Altyapı Kontrolü: Elektrik ve su şebekesindeki kopukluklar taranır.
+2.	Çevre Güncellemesi: Kirlilik ve gürültü haritaya yayılır, parklar temizlik yapar.
+3.	Lojistik Çözümü: Yol yoğunlukları ve trafik hesaplanır.
+4.	Vatandaş Hesaplaması: Hücresel sağlık ve mutluluk değerleri güncellenir. Göç/Nüfus hareketleri hesaplanır.
+5.	Finans Raporu: Vergiler kasaya eklenir, bakım masrafları düşer.
+9. UNITY SİSTEM MİMARİSİ (C#)
+GameManager.cs (Zaman ve Tick Yönetimi)
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+ResourceSystem.cs (Sadeleştirilmiş Kaynak Yönetimi)
+
+
+
+
+
+
+
+
+
+
+
+BuildingObject.cs (ScriptableObject Yapısı)
+ 
+10. VERİ MODELİ (JSON SAVE SCHEMA)
+ 
+11. OYUN SONU KOŞULLARI (GAME OVER STATES)
+1. Ekonomik İflas
+•	Koşul: Kasa bakiyesi -10.000 Eko-Para altına düşer ve 3 oyun günü boyunca düzelmezse oyuncu iflas eder.
+2. Ekolojik Felaket
+•	Koşul: Haritadaki kirlilik oranı %70'i aşarsa salgın hastalıklardan dolayı şehir yaşanmaz hale gelir ve kaybedilir.
+3. Toplumsal İsyan (Düşük Vatandaş Memnuniyeti)
+•	Koşul: Global vatandaş memnuniyeti %30'un altına düşer ve ardışık 2 oyun günü boyunca bu seviyenin üzerine çıkarılamazsa halk yönetime el koyar ve oyun biter.
+4. Sürdürülebilir Zafer (Win Condition)
+•	Koşul: 2000 nüfusa ulaşıp, sıfır karbon salınımı ve %90 genel memnuniyet yakalandığında ekolojik zafer tetiklenir.
+12. GÖRSEL VE UI SİSTEMİ
+Veri Katmanları (Overlay)
+•	🟢 Yeşil: Sorunsuz alanlar, yüksek mutluluk, temiz hava, çalışan şebeke.
+•	🟡 Sarı: Sınırda yoğunluk, hafif gürültü veya hafif trafik başlangıcı.
+•	🔴 Kırmızı: Kritik kriz! Elektrik/su yok, gürültü >55 dB veya ağır kirlilik/isyan riski.
+UI Düzeni
+•	Üst Bar: Anlık kaynak durumu (Para, Nüfus, Mutluluk, Kirlilik).
+•	Sağ Panel: Şehir analiz grafikleri (Karbon dengesi, sağlık raporu).
+•	Alt Panel: İnşaat, zonlama ve bütçe yönetim sekmeleri.
+
+
+
+AI CHATBOT SYSTEMS DESIGN DOCUMENT (AI-CSDD)
+Proje Kodu: UT-CHAT-2026
+Sürüm: 1.0.0-RELEASE
+Hedef Motor: Unity 6 (LTS) / C# 12
+Mimari Sistem: Hibrit Kural Tabanlı NLP & Dinamik Bağlam Entegrasyon Motoru
+1. 🤖 CHATBOT SİSTEM GENEL TANIMI
+Bu sistem, şehir kurma simülasyonunda oyuncunun karşısına akıllı bir Şehir Başdanışmanı (NPC Assistant) olarak çıkan, gerçek zamanlı çalışan bir yapay zekâ sohbet botudur.
+Chatbot, statik diyalog ağaçları (dialogue trees) yerine oyuncunun serbest metin girişlerini analiz eden dinamik bir yapıya sahiptir. Sistem, sadece metinsel bir sohbet motoru değil; gücünü doğrudan oyun simülasyonunun anlık verilerinden alan, şehre ait metrikleri yorumlayan ve oyuncuya operasyonel içgörüler sunan bir Simülasyon Tercümanıdır.
+Temel Sorumluluklar ve Veri Akışı
+•	Oyuncu Girişi: Oyuncunun klavyeden girdiği serbest Türkçe metni analiz eder.
+•	Bağlamsal Analiz: Sorunun sorulduğu andaki şehir bütçesini, kirlilik oranlarını, gürültü seviyelerini ve vatandaş memnuniyetini okur.
+•	Aksiyonel Yardım: Şehirde ters giden mekanikleri tespit ederek oyuncuya mikro/makro düzeyde düzeltici tavsiyeler verir, kör noktaları görünür kılar.
+2. 🧠 SİSTEM MİMARİSİ
+Sistem, performans optimizasyonunu korumak ve harici LLM (Large Language Model) servislerine olan bağımlılığı/gecikmeyi (latency) ortadan kaldırmak amacıyla lokal, hafif ve deterministik 4 ana katmandan oluşur.
+       [ OYUNCU METİN GİRİŞİ ]
+                  │
+                  ▼
+         [ 2.1 NLP KATMANI ] ───> (Intent & Entity Tespiti)
+                  │
+                  ▼
+    [ 2.2 GAME CONTEXT LAYER ] ──> (Anlık Şehir Veri Entegrasyonu)
+                  │
+                  ▼
+      [ 2.3 RESPONSE ENGINE ] <─── [ 2.4 MEMORY SYSTEM (Hafıza) ]
+                  │
+                  ▼
+       [ ÜÇ KATMANLI DIALOG ÇIKTISI ] ──> (UI Render)
+2.1 NLP Katmanı (Natural Language Processing)
+Oyuncunun gönderdiği ham string veriyi temizler, kök analizi yapar ve eşleşen niyetleri (Intent) ile nesneleri (Entity) çıkarır.
+2.2 Game Context Layer (Oyun Bağlam Katmanı)
+NLP katmanından gelen veriyi doğrulamak için simülasyon motorunun GameManager ve ResourceSystem gibi global sınıflarından anlık telemetri verilerini çeker.
+2.3 Response Engine (Yanıt Motoru)
+Intent, Entity ve Game Context verilerini birleştirerek dinamik, parametrik metin şablonları üretir.
+2.4 Memory System (Hafıza Sistemi)
+Oyuncunun geçmişte aldığı kararları, chatbot tarafından yapılan ve göz ardı edilen uyarıları saklayarak diyaloglara derinlik ve tutarlılık kazandırır.
+3. 💬 CHATBOT DAVRANIŞ MODELİ
+Danışman AI, gelen sorunun içeriğine göre anında uzmanlık rolü değiştirir ve şehre hakim olan kriz seviyesine göre konuşma tonunu adapte eder.
+Uzmanlık Rolleri
+•	Şehir Danışmanı (Genel): Altyapı, imar planları ve yerleşim sorunlarıyla ilgilenir.
+•	Ekonomi Uzmanı: Finansal açıklar, vergi optimizasyonu ve bakım maliyetleri krizlerine odaklanır.
+•	Çevre Analisti: Kirlilik yayılımı, gürültü bariyerleri ve park ekosistemleri hakkında rapor sunar.
+Ton Sistemi (Dinamik Duygu Durumu)
+Davranış Modu	Tetiklenme Koşulu	Dil Bilgisi Yapısı
+Normal Mod	Şehir metrikleri kararlı veya pozitif bütçede.	Yapıcı, resmi, yol gösterici ve sakin bir üslup.
+Uyarı Modu	Herhangi bir ana metriğin kritik eşiğe yaklaşması ($H < 40$ veya $Pollution > 50$).	Dikkat çekici, veri odaklı, hafif kaygılı ve çözüm öneren üslup.
+Kriz Modu	Şehrin kilitlenme veya iflas aşamasına gelmesi ($Money < 0$ veya $Satisfaction < 30$).	Kısa, net, emir kipi içeren ve acil eylem planı sunan üslup.
+4. 🏙️ ŞEHİR VERİ ENTEGRASYONU
+Chatbot, karar mekanizmalarını beslemek için SimulationManager üzerindeki şu veri modelini referans alır:
+Bağlam Veri Yapısı (Context Schema)
+JSON
+{
+  "currentCityMetrics": {
+    "moneyBalance": -1500.50,
+    "globalPollutionIndex": 62,
+    "globalNoiseDb": 58,
+    "globalHappiness": 35,
+    "totalPopulation": 850
+  },
+  "infrastructureStatus": {
+    "activeBlackouts": true,
+    "roadCongestionRatio": 0.82
+  }
+}
+5. 🧠 NLP SİSTEMİ (DETAYLI)
+Sistem, çalışma zamanında (Runtime) Garbage Collector yükü yaratmamak adına optimize edilmiş Regex ve Tokenizer algoritmaları kullanır.
+Intent & Entity Matrisi
+Sınıflandırma	Anahtar Kelimeler (Keywords / Regex Grupları)	Sistem Tanımı
+INTENT_FINANCE	"para", "gelir", "vergi", "bütçe", "kazanmak", "iflas"	Finansal durum sorgulama veya tavsiye isteme.
+INTENT_POLLUTION	"kirlilik", "hava", "pis", "duman", "sağlık", "hastalık"	Çevresel felaket ve kirlilik nedenleri sorgusu.
+INTENT_BUILDING	"bina", "inşa", "yapı", "fabrika", "park", "hastane"	Seçim veya yerleşim tavsiyesi talebi.
+ENTITY_FACTORY	"fabrika", "sanayi", "endüstri", "atölye"	Ağır sanayi yapısı nesnesi.
+ENTITY_PARK	"park", "yeşil alan", "ağaçlık", "bahçe"	Çevre sönümleyici yapı nesnesi.
+Hafif Niyet Algılama Algoritması (Lightweight NLP Rule System)
+Giriş metni küçük harfe dönüştürülür (ToLowerFast), Türkçe karakterler normalize edilir ve ardından önceden derlenmiş (RegexOptions.Compiled) kelime matrisleri üzerinden geçirilerek ağırlık skoru hesaplanır.
+6. 🧾 CEVAP ÜRETİM SİSTEMİ
+Bot, oyuncuya tek düze yanıtlar vermek yerine deterministik 3 Katmanlı Yanıt Mimarisi (3-Layer Response Architecture) kullanır.
++-----------------------------------------------------------------------+
+| 1. DURUM ANALİZİ (Şu an ne oluyor? Veri doğrulaması)                 |
++-----------------------------------------------------------------------+
+| 2. ÖNERİ (Oyuncu ne yapmalı? Aksiyonel tavsiye)                       |
++-----------------------------------------------------------------------+
+| 3. UYARI / RİSK (Yapmazsa ne olacak? Gelecek projeksiyonu)           |
++-----------------------------------------------------------------------+
+Parametrik Şablon Motoru Örneği
+•	Girdi: "Kirlilik neden arttı ne yapmalıyım?"
+•	Çıktı Blokları:
+o	Analiz: "Şu anda ağır sanayi bölgelerinden yayılan hava kirliliği endeksi kritik sınır olan %62'ye ulaştı."
+o	Öneri: "Konut alanları ile fabrikalar arasındaki tampon bölgelere acilen 'Küçük Park' inşa etmelisin."
+o	Uyarı: "Eğer kirlilik yayılımını engellemezsen, vatandaş sağlığı 3 tick içinde %30'un altına inecek ve yatalak hasta sayısı artarak iş gücünü kilitleyecektir."
+7. 🧠 HAFIZA SİSTEMİ
+Hafıza sistemi, oyun seansı boyunca oyuncunun stratejik profilini çıkarır. Bu sayede chatbot, oyuncunun "yeşil enerji dostu" mu yoksa "agresif sanayici" mi olduğunu bilir.
+İzlenen Parametreler
+•	player_prefers_green: Oyuncunun termik santral yerine güneş tarlası tercih etme sıklığı.
+•	ignored_warning_count: Chatbot'un uyarılarına rağmen oyuncunun aynı hatayı yapma sayısı.
+Hafıza Veri Yapısı (Memory Model)
+JSON
+{
+  "profile": {
+    "style": "Industrialist",
+    "lastToldIntent": "INTENT_POLLUTION"
+  },
+  "history": {
+    "totalWarningsGiven": 14,
+    "ignoredTrafficWarnings": 4
+  }
+}
+8. ⚙️ UNITY ENTEGRASYONU (C# IMPLEMENTATION)
+Sistem mimarisi, veri yönetimini ana simülasyondan tamamen ayıracak şekilde soyutlanmıştır.
+NLPProcessor.cs
+C#
+using UnityEngine;
+using System.Text.RegularExpressions;
+
+public enum KeywordIntent { NONE, FINANCE_HELP, ENVIRONMENT_HELP, BUILDING_SUGGEST }
+public enum GameEntity { NONE, FACTORY, PARK, HOSPITAL }
+
+public class NLPProcessor : MonoBehaviour
+{
+    private static readonly Regex FinanceRegex = new Regex("(para|gelir|vergi|bütçe|iflas)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex PollutionRegex = new Regex("(kirlilik|hava|pis|duman|sağlık)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex ParkEntityRegex = new Regex("(park|yeşil alan|bahçe)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    public static void AnalyzeInput(string input, out KeywordIntent intent, out GameEntity entity)
+    {
+        intent = KeywordIntent.NONE;
+        entity = GameEntity.NONE;
+
+        if (string.IsNullOrEmpty(input)) return;
+
+        // Intent Analizi
+        if (FinanceRegex.IsMatch(input)) intent = KeywordIntent.FINANCE_HELP;
+        else if (PollutionRegex.IsMatch(input)) intent = KeywordIntent.ENVIRONMENT_HELP;
+
+        // Entity Analizi
+        if (ParkEntityRegex.IsMatch(input)) entity = GameEntity.PARK;
+    }
+}
+GameContextReader.cs
+C#
+using UnityEngine;
+
+public struct CitySnapshot
+{
+    public float money;
+    public float pollutionIndex;
+    public float happiness;
+}
+
+public class GameContextReader : MonoBehaviour
+{
+    public static CitySnapshot ReadCityData()
+    {
+        // Gerçek simülasyon tekil sınıflarından (Singletons) veri çekimi taklidi
+        CitySnapshot snapshot = new CitySnapshot
+        {
+            money = -1200f, // Örnek kriz durumu verisi
+            pollutionIndex = 65f,
+            happiness = 34f
+        };
+        return snapshot;
+    }
+}
+ResponseGenerator.cs
+C#
+using System.Text;
+
+public class ResponseGenerator
+{
+    public static string GenerateResponse(KeywordIntent intent, GameEntity entity, CitySnapshot context)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        switch (intent)
+        {
+            case KeywordIntent.ENVIRONMENT_HELP:
+                if (context.pollutionIndex > 50f)
+                {
+                    sb.AppendLine("[ANALİZ] Çevre kirliliği endeksi %" + context.pollutionIndex + " seviyesine fırlamış durumda.");
+                    sb.AppendLine("[ÖNERİ] Fabrikaların yayılım alanlarına acilen yeşil absorbe hücreleri (Park) yerleştirmelisin.");
+                    sb.AppendLine("[UYARI] Hava kalitesi düzelmezse vatandaşlar hastalanacak ve iş gücü çökecektir.");
+                }
+                else
+                {
+                    sb.AppendLine("[ANALİZ] Hava ve çevre şu an stabil durumda. Yeşil denge korunuyor.");
+                }
+                break;
+
+            case KeywordIntent.FINANCE_HELP:
+                if (context.money < 0)
+                {
+                    sb.AppendLine("[ANALİZ] Şehir bütçesi " + context.money + " Eko-Para değerinde! İflasın eşiğindeyiz.");
+                    sb.AppendLine("[ÖNERİ] Bakım maliyetleri yüksek olan aktif binaları geçici olarak durdur veya yeni sanayi zonu planla.");
+                    sb.AppendLine("[UYARI] 3 gün içinde bütçe artıya geçmezse kamu hizmetleri tamamen felç olacak.");
+                }
+                break;
+
+            default:
+                sb.AppendLine("[DANIŞMAN] Tam olarak neyi analiz etmemi istersiniz? Ekonomi mi yoksa çevre sağlığı mı?");
+                break;
+        }
+
+        return sb.ToString();
+    }
+}
+ChatbotManager.cs (Ana Entegrasyon Hattı)
+C#
+using UnityEngine;
+using System;
+
+public class ChatbotManager : MonoBehaviour
+{
+    public static ChatbotManager Instance { get; private set; }
+    
+    public event Action<string> OnBotResponseReady;
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
+
+    public void ReceivePlayerMessage(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message)) return;
+
+        // 1. NLP İşleme Katmanı
+        NLPProcessor.AnalyzeInput(message, out KeywordIntent intent, out GameEntity entity);
+
+        // 2. Simülasyon Veri Katmanı Entegrasyonu
+        CitySnapshot currentContext = GameContextReader.ReadCityData();
+
+        // 3. Cevap Üretim Hattı ve Hafıza Filtresi
+        string finalResponse = ResponseGenerator.GenerateResponse(intent, entity, currentContext);
+
+        // 4. UI Katmanına Cevabı Gönder
+        OnBotResponseReady?.Invoke(finalResponse);
+    }
+}
+9. 🎯 CHATBOT DAVRANIŞ MODLARI UYGULAMASI
+Sistem, üretilen string çıktıların UI üzerindeki görsel stilini (renk, font büyüklüğü, avatar ifadesi) de dinamik olarak belirler.
+C#
+public enum DialogueTone { NORMAL, WARNING, CRISIS }
+
+public DialogueTone EvaluateCurrentTone(CitySnapshot snapshot)
+{
+    if (snapshot.money < -5000f || snapshot.happiness < 30f)
+        return DialogueTone.CRISIS; // UI Kırmızı renk temasına geçer, avatar panikler.
+        
+    if (snapshot.pollutionIndex > 60f || snapshot.happiness < 45f)
+        return DialogueTone.WARNING; // UI Sarı renk temasına geçer, uyarı ikonu yanar.
+        
+    return DialogueTone.NORMAL; // UI Yeşil/Mavi sakin tonlardadır.
+}
+10. 🧪 TEST SENARYOLARI (QA EVALUATION)
+Test Senaryosu 1: Kirlilik Analizi Doğrulaması
+•	Giriş Metni: "Nefes alamıyoruz her yer duman oldu yardım et"
+•	Simülasyon Koşulu: Hava kirliliği = %72.
+•	Beklenen Çıktı: NLP katmanı ENVIRONMENT_HELP niyetini yakalamalıdır. Yanıt motoru kirliliğin %72 olduğunu onaylayan, park yapılmasını öneren ve iş gücü çöküşü riskini vurgulayan 3 katmanlı metni üretmelidir.
+Test Senaryosu 2: Ekonomik Tavsiye İstemi
+•	Giriş Metni: "Kasa bomboş acil para lazım nasıl bütçeyi düzeltirim"
+•	Simülasyon Koşulu: moneyBalance = -2500f.
+•	Beklenen Çıktı: Ekonomi Uzmanı rolü tetiklenmelidir. Bot, FINANCE_HELP niyetini işlemeli ve oyuncuya binaları kapatma veya vergi artırma simülasyon tavsiyesini dönmelidir.
+Test Senaryosu 3: Alakasız Kelime Giriş Filtresi (Fallback)
+•	Giriş Metni: "Bugün hava çok güzel patates yemek istiyorum"
+•	Simülasyon Koşulu: Şehir stabil.
+•	Beklenen Çıktı: Sistem NONE niyetini döndürmeli, performansı korumak adına bağlam okuması yapmadan doğrudan standart yardım yönlendirme kalıbını ekrana basmalıdır.
+11. 🔁 PERFORMANS OPTİMİZASYONU STRATEJİLERİ
+1.	Diyalog Şablon Önbelleğe Alma (Caching): Aynı bağlam ve intent kombinasyonları için her seferinde string oluşturulmaz; önbelleğe alınmış (Dictionary<int, string>) statik şablonlar doğrudan çağrılarak bellek yönetimi optimize edilir.
+2.	String Allocation Engelleme: Çalışma zamanında StringBuilder havuzu (Object Pool) kullanılarak string + string birleştirmelerinin yarattığı Garbage Collector (GC) anlık tepe noktaları (spikes) tamamen engellenir.
+3.	Zaman Dilimli Analiz (Tick-Based NLP): Eğer oyuncu çok hızlı metin yazarsa, arayüz metni kabul eder ancak analiz motoru her karede (Frame) değil, simülasyonun kendi tick hattında asenkron kuyruk yapısıyla çalıştırılır.
+LEARNING ANALYTICS & GAME TELEMETRY SYSTEMS DESIGN DOCUMENT (LA-GTSDD)
+Proje Kodu: UT-ANLYX-2026
+Sürüm: 2.1.0-PROD
+Hedef Motor: Unity 6 (LTS)
+Mimari Sistem: Olay Güdümlü Telemetri Hattı (Event-Driven Telemetry Pipeline) ve Gerçek Zamanlı Eğitsel Analitik Motoru
+1. 🎯 ÖĞRENME ANALİTİĞİ SİSTEMİNİN AMACI
+Bu sistem; şehir kurma simülasyonu mimarisinde oyuncuların mikromanajman, makroekonomik denge kurma ve kentsel planlama süreçlerindeki bilişsel yüklerini, problem çözme yeteneklerini ve stratejik karar alma süreçlerini sayısallaştırmak amacıyla tasarlanmıştır.
+Sistem veri odaklı olarak şu kararları destekler:
+•	Dinamik Zorluk Dengesi (DDA): Oyuncunun öğrenme eğrisine göre simülasyon kriz tetikleyicilerinin (örn. ekonomik resesyon, altyapı çöküşü) gerçek zamanlı optimize edilmesi.
+•	Eğitsel İskeletleme (Scaffolding): Oyuncunun kavramakta zorlandığı pedagojik alanların (örn. bütçe yönetimi, sürdürülebilirlik) tespit edilerek oyun içi danışman AI tarafından doğru yönlendirilmesi.
+•	Sistem Optimizasyonu: Tasarım ekibinin oyun mekaniklerindeki dengesizlikleri, darboğazları ve kullanıcı deneyimi (UX) kırılmalarını ısı haritaları (heatmaps) ve telemetri logları üzerinden tespit etmesi.
+2. 📦 TOPLANACAK VERİ TÜRLERİ (TELEMETRİ)
+Veri toplama mimarisi, bellek dostu (zero-allocation) yapılardan beslenen dört temel telemetri kategorisine ayrılmıştır.
+2.1 Davranış Verileri (Behavioral Telemetry)
+•	İnşa Edilen Bina Sayısı ve Dağılımı: Tip bazında ($T_{residential}, T_{commercial}, T_{industrial}$) toplam yerleşim yoğunluğu.
+•	Sub-optimum Yerleşim Oranı: Sanayi bölgelerinin konut alanlarına olan piksel tabanlı yakınlık matrisi (Gürültü ve kirlilik yayılım yarıçapı ihlalleri).
+•	Navigasyon ve Harita Yoğunluğu: Kamera odağının (Camera Target Focus) koordinat bazlı kalış süreleri (Isı haritası üretimi için).
+2.2 Performans Verileri (Performance Telemetry)
+•	Ekonomik Büyüme Katsayısı: Delta bütçe ($dB/dt$) eğrisi.
+•	Emisyon Kontrol İndeksi: Filtrasyon tesislerinin kapsama alanına oranı.
+•	Demografik Stabilite: Göç alım / göç verim hızı ve işsizlik rasyosu.
+2.3 Zaman Verileri (Temporal Telemetry)
+•	Karar Verme Süresi (Decision Latency): Bir kriz uyarısı veya arayüz bildirimi çıktıktan sonra oyuncunun ilgili koordinata tıklayana kadar geçen süre ($t_{reaction}$).
+•	Göven Tamamlama Süresi: Senaryo bazlı makro hedeflere ulaşma hızı.
+2.4 Hata Verileri (Error & Failure Telemetry)
+•	Kaynak Kilitlenmeleri (Deadlocks): Elektrik/su şebekesi döngüsel bağımlılık hataları sebebiyle yaşanan sistem durmaları.
+•	Finansal İflas Eşikleri: Bütçenin sıfırın altına düşme sıklığı ve negatif bütçede kalma süresi.
+3. 📊 ÖLÇÜLECEK ÖĞRENME METRİKLERİ
+Sistem, ham telemetri verilerini birleştirerek üst düzey pedagojik yetkinlik metriklerine dönüştürür.
+Metrik Adı	Operasyonel Tanımı / Hesaplama Yöntemi	Eğitsel Karşılığı
+Stratejik Düşünme Puanı	Yatırım yapılan binaların gelecekteki amortisman ve bakım maliyetlerinin ($OPEX$), anlık bütçeye rasyonel dağılımı.	Proaktif Planlama Yeteneği
+Kaynak Yönetimi Başarısı	$\frac{\text{Üretilen Toplam Kaynak}}{\text{Tüketilen Kaynak}} \rightarrow 1.0$ optimizasyonuna yaklaşım oranı.	Sınırlı Kaynakların Dağıtımı
+Çevresel Denge Skoru	Sanayi çıktılarının, dikilen toplam aktif karbon yutak alanları (park, orman) tarafından sönümlenme yüzdesi.	Sürdürülebilirlik Farkındalığı
+Problem Çözme Süresi	Şehir genelinde tetiklenen bir yangın veya salgın hastalığın yayılım hızının durdurulma süresi ($t_{extinguish}$).	Kriz Yönetimi
+4. 🧠 VERİ ANALİZ MODELLERİ
+Veri işleme hattı, oyuncunun öğrenme serüvenini dört aşamalı analitik katmanından geçirir.
+[ Ham Telemetri Verisi ] 
+       │
+       ▼
+ 1. BETİMSEL ANALİTİK  ───> "Ne oldu?" (Grafikler, Loglar)
+       │
+       ▼
+ 2. TANISAL ANALİTİK   ───> "Neden oldu?" (Kök Neden Korelasyonu)
+       │
+       ▼
+ 3. TAHMİNE DAYALI     ───> "Ne olacak?" (Yapay Zeka Makine Öğrenmesi)
+       │
+       ▼
+ 4. REÇETELESEL        ───> "Ne yapmalı?" (Dinamik Geri Bildirim Motoru)
+4.1 Betimsel Analitik (Descriptive Analytics)
+•	Sistem Sorumluluğu: Oyuncunun oturum boyunca attığı adımların özetini çıkarır.
+•	Örnek: "Oyuncu 45 dakikalık oturumda 14 konut, 3 fabrika, 1 kömür santrali inşa etti; mutluluk oranı %52'ye düştü."
+4.2 Tanısal Analitik (Diagnostic Analytics)
+•	Sistem Sorumluluğu: Performans düşüşlerinin arkasındaki korelasyonları inceler.
+•	Örnek: Mutluluk oranının düşme sebebi, sanayi bölgesi kirlilik alanının konut bölgesinin $XZ$ düzlemindeki bounding box (etki alanı) verisiyle %40 oranında çakışmasıdır.
+4.3 Tahmine Dayalı Analitik (Predictive Analytics)
+•	Sistem Sorumluluğu: Zaman serisi verilerini inceleyerek yakın gelecekteki olası sistem çökmelerini hesaplar.
+•	Örnek: Mevcut harcama hızı ve vergi geliri eğrisi ($dG/dt$) bu şekilde devam ederse, şehir sonraki 4 simülasyon tick'i içinde iflas edecektir.
+4.4 Reçetelesel Analitik (Prescriptive Analytics)
+•	Sistem Sorumluluğu: Tahmin edilen krizleri engellemek için oyun motoruna müdahale parametreleri üretir.
+•	Örnek: Vergi arayüzünü parlat (UI Highlight), çevre danışman NPC'sini devreye sok ve park inşa maliyetlerinde geçici olarak %15 indirim uygula.
+5. 📈 ÖĞRENME PUANI SİSTEMİ (LEARNING SCORE)
+Oyuncunun genel gelişimsel ilerlemesi, ağırlıklı bir normalize edilmiş denklem sistemi üzerinden hesaplanır. Formüldeki tüm alt değişkenler $[0, 100]$ aralığına normalize edilmiştir.
+$$LearningScore = (S_{eco} \cdot 0.3) + (S_{env} \cdot 0.3) + (Q_{dec} \cdot 0.2) + (E_{time} \cdot 0.2)$$
+•	$S_{eco}$ : Ekonomik İstikrar Başarı Puanı
+•	$S_{env}$ : Çevresel Sürdürülebilirlik Puanı
+•	$Q_{dec}$ : Karar Kalitesi Puanı (Hata/Doğru karar rasyosu)
+•	$E_{time}$ : Zaman Verimliliği Puanı (Kriz çözme hızı indeksi)
+6. 🏙️ ŞEHİR PERFORMANS ANALİZİ
+Şehir performans verileri, telemetri sunucusuna gönderilmeden önce Unity tarafında aşağıdaki veri yapısında (C# Struct / JSON formatı) serileştirilir.
+JSON
+{
+  "city_telemetry_packet": {
+    "timestamp": 1783285400,
+    "metrics": {
+      "economic_stability": 78,
+      "environment_score": 52,
+      "citizen_satisfaction": 61,
+      "infrastructure_efficiency": 70
+    },
+    "network_status": {
+      "power_grid_load_ratio": 0.85,
+      "water_deadlock_detected": false
+    }
+  }
+}
+7. 🧠 ÖĞRENME DAVRANIŞ ANALİZİ (DATA MINING)
+Oyuncu profillerini segmentlere ayırmak için arka planda K-Means Kümeleme (Clustering) algoritması koşturulur. Her oyuncu, simülasyon sunucusunda 4 boyutlu bir öznitelik vektörü (feature vector) ile temsil edilir:
+$$\vec{x} = [f_{eco}, f_{env}, f_{speed}, f_{exp}]^T$$
+Oyuncu Arketip Sınıflandırmaları
+1.	Dengesiz Geliştirici (Industrialist): Yüksek $f_{eco}$, kritik düzeyde düşük $f_{env}$. Tek odağı finansal büyümedir.
+2.	Çevreci Oyuncu (Ecologist): Maksimum $f_{env}$, orta-düşük $f_{eco}$. Ekonomiyi riske atma pahasına yeşil şehre odaklanır.
+3.	Hızlı İlerleyen Oyuncu (Speeder): Maksimum $f_{speed}$. Kararları derinlemesine düşünmeden hızlıca yerleşim yapar, hata oranı yüksektir.
+4.	Deneysel Oyuncu (Explorer): Yüksek $f_{exp}$. Alışılmadık bina kombinasyonları ve uç bütçe limitlerini dener.
+8. ⚠️ KRİTİK HATA ANALİZİ
+Sistem, oyuncuların en çok yaptığı mantıksal hataları yakalamak için bir Hata Matrisi Bölümlemesi (Failure Mode Matrix) çalıştırır.
+•	En Sık Çöküş Nedeni: Vergi gelirlerinin yüksek oranda artırılması sonucu konut bölgelerinin tamamen terk edilmesi ve "Hayalet Şehir Darboğazı" tetiklenmesi.
+•	En Kötü Bina Kombinasyonu: Kömür Santrali $+$ Su Pompalama İstasyonu yan yana konumlandırması (Ağır toksik su zehirlenmesi tetiklemesi).
+•	En Verimsiz Strateji: İtfaiye istasyonu kurmadan, ahşap yoğunluklu düşük gelirli konut alanlarını bitişik nizamda genişletmek.
+9. 📊 UNITY VERİ TOPLAMA MİMARİSİ (C# IMPLEMENTATION)
+Sistem, MonoBehaviour tıkamalarını engellemek, ana oyun iş parçacığını (Main Thread) rahatlatmak ve bellek çöpü (GC Allocation) üretmemek için yapılandırılmıştır.
+EventTracker.cs (Olay Yönetim Altyapısı)
+C#
+using System;
+using System.Collections.Generic;
+
+public static class EventTracker
+{
+    public static event Action<string, Dictionary<string, object>> OnTelemetryEventTriggered;
+
+    public static void LogEvent(string eventName, Dictionary<string, object> eventData)
+    {
+        OnTelemetryEventTriggered?.Invoke(eventName, eventData);
+    }
+}
+PlayerBehaviorLogger.cs (Davranış Kayıt Sistemi)
+C#
+using UnityEngine;
+using System.Collections.Generic;
+
+public class PlayerBehaviorLogger : MonoBehaviour
+{
+    public void TrackBuildingPlacement(string buildingType, float pollutionImpact, float cost)
+    {
+        var data = new Dictionary<string, object>
+        {
+            { "building_type", buildingType },
+            { "pollution_impact", pollutionImpact },
+            { "capital_expenditure", cost },
+            { "grid_position_x", transform.position.x },
+            { "grid_position_z", transform.position.z }
+        };
+
+        EventTracker.LogEvent("BUILDING_PLACED", data);
+    }
+}
+CityMetricsCollector.cs (Metrik Toplayıcı)
+C#
+using UnityEngine;
+using System;
+
+[Serializable]
+public struct TelemetryPayload
+{
+    public long session_time;
+    public int mistake_count;
+    public float efficiency_score;
+    public string profile_guid;
+}
+
+public class CityMetricsCollector : MonoBehaviour
+{
+    public TelemetryPayload PreparePayload(float sessionTime, int mistakes, float efficiency, string guid)
+    {
+        TelemetryPayload payload = new TelemetryPayload();
+        payload.session_time = (long)sessionTime;
+        payload.mistake_count = mistakes;
+        payload.efficiency_score = efficiency;
+        payload.profile_guid = guid;
+        return payload;
+    }
+
+    public string SerializePayload(TelemetryPayload payload)
+    {
+        return JsonUtility.ToJson(payload);
+    }
+}
+AnalyticsManager.cs (Ana Yönetici Merkez)
+C#
+using UnityEngine;
+using System.Collections.Generic;
+
+public class AnalyticsManager : MonoBehaviour
+{
+    public static AnalyticsManager Instance { get; private set; }
+
+    [SerializeField] private string targetAnalyticsServerUrl = "https://analytics.ut-game.internal/telemetry";
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+            EventTracker.OnTelemetryEventTriggered += HandleTelemetryEvent;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private void HandleTelemetryEvent(string eventName, Dictionary<string, object> data)
+    {
+        // Gerçek üretim senaryosunda burası verileri bir kuyruğa (Queue) ekler
+        // ve arka planda bir Thread/Task ile sunucuya toplu (Batch) olarak gönderir.
+        #if UNITY_EDITOR
+        Debug.Log($"[TELEMETRY PIPELINE] Event: {eventName} queued. Data count: {data.Count}");
+        #endif
+    }
+
+    private void OnDestroy()
+    {
+        EventTracker.OnTelemetryEventTriggered -= HandleTelemetryEvent;
+    }
+}
+10. 💾 VERİ FORMATI (SESSION TELEMETRY JSON SCHEMA)
+Her oturum sonunda veya makro checkpoint anlarında sunucuya basılan sıkıştırılmış oturum verisi şeması:
+JSON
+{
+  "session_summary": {
+    "session_guid": "7f8b9c2a-e112-463d-8812-990ffca2b026",
+    "player_metrics": {
+      "total_session_time_seconds": 3600,
+      "final_learning_score": 74.8
+    },
+    "infrastructure": {
+      "buildings_constructed": {
+        "residential_low": 12,
+        "industrial_heavy": 5,
+        "eco_park": 3
+      }
+    },
+    "evaluation": {
+      "critical_mistakes_logged": 4,
+      "global_efficiency_percentage": 72.1
+    }
+  }
+}
+11. 📉 GERI BİLDİRİM SİSTEMİ (DATA-DRIVEN PEDAGOGY)
+Analiz sonuçları, doğrudan soyut grafikler olarak kalmaz; oyun içi mekanik tetikleyicilere ve diyalog motoruna veri girdisi sağlar.
+•	Tetikleyici Koşul: environment_score < 40 VE industrial_heavy > 5
+o	Sistem Çıktısı: Çevre Analisti NPC arayüzü parlar ve şu dinamik uyarı cümlesini oluşturur: "Kirlilik indeksimiz kritik eşiğe ulaştı; fabrikaların etki alanını sönümlemek için yeşil absorbe hücreleri (Park) yerleştirmelisin."
+•	Tetikleyici Koşul: economic_stability > 85 VE environment_score < 30
+o	Sistem Çıktısı: Eğitim rehberi arayüzü tetiklenir: "Ekonomik büyümeniz güçlü ancak ekolojik sürdürülebilirlik feda ediliyor. Çevresel denge skoru düzelene kadar yeni sanayi izni dondurulmuştur."
+12. 🔁 GERÇEK ZAMANLI ANALİZ (REAL-TIME PIPELINE ENGINE)
+Sistem, oyun içi performansı düşürmemek (Frame rate drop yaşamamak) adına Tick-Based (Zaman dilimli kuyruk) mimarisini koşturur.
+[ Her Kare (Frame) ] ──> Sadece kritik olayları (Olay tetiklendiğinde) kuyruğa ekler.
+                                │
+                                ▼
+[ Her 10 Saniyede Bir ] ──> Kuyruktaki verileri birleştirir, yerel analizleri yapar.
+                                │
+                                ▼
+[ Oturum Sonu / Çıkış ] ──> Tüm veri paketini buluta (Cloud Analytics) asenkron olarak basar.
+Zaman Dilimli Güncelleme Kuralları
+•	10 Saniyelik Periyot: CityMetricsCollector, her 10 simülasyon saniyesinde bir şehrin telemetri fotoğrafını çeker ve LearningScore fonksiyonunu yeniden çalıştırır. Eğer öğrenme skoru ardışık 3 periyot boyunca düşüş gösterirse, oyun motoru gizli iskeletleme (scaffolding) moduna geçerek krizlerin büyüme hızını geçici olarak yavaşlatır ($DynamicDifficultyAdjustment$).
+

@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83fca7138e62408489e2adff3525ab95, type: 3}
+  m_Name: EkoFabrika
+  m_EditorClassIdentifier: 
+  buildingName: "Eko-Teknoloji Fabrikas\u0131"
+  category: 1
+  description: "Geli\u015Fmi\u015F end\xFCstri. Y\xFCksek vergi, minimum kirlilik.
+    Pahal\u0131 yat\u0131r\u0131m."
+  gridWidth: 3
+  gridHeight: 3
+  buildCost: 9000
+  maintenanceCostPerTick: 50
+  energyDelta: -20
+  waterDelta: -3
+  taxIncomePerTick: 180
+  populationCapacity: 0
+  airPollutionPerTick: 3
+  waterPollutionPerTick: 1
+  soilPollutionPerTick: 0
+  carbonEmissionPerTick: 2
+  noiseLevel: 20
+  happinessBonus: 0
+  healthBonus: 0
+  effectRadius: 0
+  pollutionAbsorptionPerTick: 0
+  noiseAbsorptionBonus: 0
+  blockoutColor: {r: 0.2, g: 0.7, b: 0.65, a: 1}
+  blockoutHeight: 2.2
+  canUpgrade: 0
+  maxLevel: 1

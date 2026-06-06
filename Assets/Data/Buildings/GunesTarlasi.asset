@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83fca7138e62408489e2adff3525ab95, type: 3}
+  m_Name: GunesTarlasi
+  m_EditorClassIdentifier: 
+  buildingName: "G\xFCne\u015F Tarlas\u0131"
+  category: 5
+  description: "Temiz enerji +40 MW. S\u0131f\u0131r kirlilik! Y\xFCksek yat\u0131r\u0131m
+    maliyeti."
+  gridWidth: 4
+  gridHeight: 4
+  buildCost: 12000
+  maintenanceCostPerTick: 50
+  energyDelta: 40
+  waterDelta: 0
+  taxIncomePerTick: 0
+  populationCapacity: 0
+  airPollutionPerTick: 0
+  waterPollutionPerTick: 0
+  soilPollutionPerTick: 0
+  carbonEmissionPerTick: 0
+  noiseLevel: 0
+  happinessBonus: 0
+  healthBonus: 0
+  effectRadius: 0
+  pollutionAbsorptionPerTick: 0
+  noiseAbsorptionBonus: 0
+  blockoutColor: {r: 0.95, g: 0.85, b: 0.2, a: 1}
+  blockoutHeight: 0.3
+  canUpgrade: 0
+  maxLevel: 1

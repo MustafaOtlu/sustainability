@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83fca7138e62408489e2adff3525ab95, type: 3}
+  m_Name: KucukPark
+  m_EditorClassIdentifier: 
+  buildingName: "K\xFC\xE7\xFCk Park"
+  category: 2
+  description: "Kirlili\u011Fi ve g\xFCr\xFClt\xFCy\xFC absorbe eder. Yak\u0131n
+    konutlar\u0131n mutlulu\u011Funu art\u0131r\u0131r."
+  gridWidth: 1
+  gridHeight: 1
+  buildCost: 300
+  maintenanceCostPerTick: 15
+  energyDelta: 0
+  waterDelta: 0
+  taxIncomePerTick: 0
+  populationCapacity: 0
+  airPollutionPerTick: 0
+  waterPollutionPerTick: 0
+  soilPollutionPerTick: 0
+  carbonEmissionPerTick: 0
+  noiseLevel: 0
+  happinessBonus: 10
+  healthBonus: 0
+  effectRadius: 4
+  pollutionAbsorptionPerTick: 10
+  noiseAbsorptionBonus: 16
+  blockoutColor: {r: 0.2, g: 0.75, b: 0.25, a: 1}
+  blockoutHeight: 0.4
+  canUpgrade: 0
+  maxLevel: 1
