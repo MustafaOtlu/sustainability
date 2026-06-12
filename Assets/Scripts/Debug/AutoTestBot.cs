@@ -112,35 +112,75 @@ public class AutoTestBot : MonoBehaviour
         foreach (var b in BuildingPlacer.Instance.AvailableBuildings)
         {
             if (b == null) continue;
-            string name = b.buildingName.ToLower();
+            string name = b.buildingName.ToLowerInvariant();
 
-            if (name.Contains("kömür")) coalPlant = b;
-            else if (name.Contains("güneş")) solarFarm = b;
-            else if (name.Contains("pompa")) waterPump = b;
-            else if (name.Contains("küçük konut")) smallHouse = b;
-            else if (name.Contains("apartman")) apartment = b;
-            else if (name.Contains("ağır")) heavyIndustry = b;
-            else if (name.Contains("eko")) ecoFactory = b;
-            else if (name.Contains("park")) smallPark = b;
-            else if (name.Contains("kültür")) cultureCenter = b;
-            else if (name.Contains("hastane")) hospital = b;
+            // Kategori + özellik bazlı eşleştirme (isim bağımsız)
+            switch (b.category)
+            {
+                case BuildingData.BuildingCategory.Power:
+                    if (b.carbonEmissionPerTick > 0 && coalPlant == null)
+                        coalPlant = b;   // Kirli enerji = kömür
+                    else if (b.carbonEmissionPerTick <= 0 && solarFarm == null)
+                        solarFarm = b;   // Temiz enerji = güneş
+                    break;
+                case BuildingData.BuildingCategory.Water:
+                    if (waterPump == null) waterPump = b;
+                    break;
+                case BuildingData.BuildingCategory.Residential:
+                    if (b.gridWidth == 1 && b.gridHeight == 1 && smallHouse == null)
+                        smallHouse = b;  // Küçük konut (1x1)
+                    else if ((b.gridWidth > 1 || b.gridHeight > 1) && apartment == null)
+                        apartment = b;   // Büyük konut (2x2+)
+                    break;
+                case BuildingData.BuildingCategory.Industrial:
+                    if (b.carbonEmissionPerTick > 50 && heavyIndustry == null)
+                        heavyIndustry = b; // Yüksek karbon = ağır sanayi
+                    else if (b.carbonEmissionPerTick <= 50 && ecoFactory == null)
+                        ecoFactory = b;    // Düşük karbon = eko fabrika
+                    break;
+                case BuildingData.BuildingCategory.Environmental:
+                    if (smallPark == null) smallPark = b;
+                    break;
+                case BuildingData.BuildingCategory.Social:
+                    if (cultureCenter == null) cultureCenter = b;
+                    break;
+                case BuildingData.BuildingCategory.Healthcare:
+                    if (hospital == null) hospital = b;
+                    break;
+            }
         }
 
-        int found = 0;
-        if (coalPlant != null) found++;
-        if (solarFarm != null) found++;
-        if (waterPump != null) found++;
-        if (smallHouse != null) found++;
-        if (apartment != null) found++;
-        if (heavyIndustry != null) found++;
-        if (ecoFactory != null) found++;
-        if (smallPark != null) found++;
-        if (cultureCenter != null) found++;
-        if (hospital != null) found++;
+        // İsim bazlı fallback (eğer kategoriler dolduramadıysa)
+        foreach (var b in BuildingPlacer.Instance.AvailableBuildings)
+        {
+            if (b == null) continue;
+            string name = b.buildingName.ToLowerInvariant();
+            if (coalPlant == null && (name.Contains("kömür") || name.Contains("termik"))) coalPlant = b;
+            if (solarFarm == null && (name.Contains("güneş") || name.Contains("solar"))) solarFarm = b;
+            if (waterPump == null && (name.Contains("pompa") || name.Contains("su"))) waterPump = b;
+            if (smallHouse == null && (name.Contains("küçük") || name.Contains("konut"))) smallHouse = b;
+            if (apartment == null && name.Contains("apartman")) apartment = b;
+            if (heavyIndustry == null && (name.Contains("ağır") || name.Contains("sanayi"))) heavyIndustry = b;
+            if (ecoFactory == null && (name.Contains("eko") || name.Contains("yeşil fabrika"))) ecoFactory = b;
+            if (smallPark == null && name.Contains("park")) smallPark = b;
+            if (cultureCenter == null && name.Contains("kültür")) cultureCenter = b;
+            if (hospital == null && name.Contains("hastane")) hospital = b;
+        }
+
+        int found = new[] { coalPlant, solarFarm, waterPump, smallHouse, apartment,
+                            heavyIndustry, ecoFactory, smallPark, cultureCenter, hospital }
+                    .Count(x => x != null);
 
         LogBot($"📋 {found}/10 bina tipi bulundu.");
+        if (coalPlant != null) LogBot($"   ⚡ Kömür: {coalPlant.buildingName}");
+        if (solarFarm != null) LogBot($"   ☀️ Güneş: {solarFarm.buildingName}");
+        if (waterPump != null) LogBot($"   💧 Su: {waterPump.buildingName}");
+        if (smallHouse != null) LogBot($"   🏠 Konut: {smallHouse.buildingName}");
+        if (heavyIndustry != null) LogBot($"   🏭 Sanayi: {heavyIndustry.buildingName}");
+        if (ecoFactory != null) LogBot($"   ♻️ EkoFabrika: {ecoFactory.buildingName}");
+        if (smallPark != null) LogBot($"   🌳 Park: {smallPark.buildingName}");
 
-        if (found < 5)
+        if (found < 3)
         {
             LogBot("⚠ Yeterli bina tipi bulunamadı! Bot devre dışı.");
             botEnabled = false;

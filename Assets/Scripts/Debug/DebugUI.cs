@@ -114,6 +114,7 @@ public class DebugUI : MonoBehaviour
 
         DrawStatusPanel();
         DrawBuildingMenu();
+        DrawQuestPanel();
         DrawControlsBar();
 
         // Oyun sonu ekranı (varsa)
@@ -381,7 +382,7 @@ public class DebugUI : MonoBehaviour
         controlsBarRect = new Rect(x, y, w, h);
         GUI.Box(controlsBarRect, "", boxStyle);
         GUI.Label(new Rect(x + 8, y + 4, w - 16, h - 8),
-            "WASD: Kaydır | Scroll: Zoom | Sol Tık: Yerleştir | Sağ Tık/ESC: İptal | F5: Kaydet | F9: Yükle",
+            "WASD:Kaydır | Scroll:Zoom | Sol Tık:Yerleştir | ESC:İptal | F5:Kaydet | F9:Yükle | T:Danışman",
             smallLabelStyle);
     }
 
@@ -475,6 +476,41 @@ public class DebugUI : MonoBehaviour
         if (GUILayout.Button("🔄 Yeniden Başlat", restartStyle))
         {
             GameOverSystem.Instance?.RestartGame();
+        }
+
+        GUILayout.EndArea();
+    }
+
+    // ─── SAĞ ÜST: Görev Paneli ─────────────────────────────────
+    private void DrawQuestPanel()
+    {
+        if (QuestSystem.Instance == null) return;
+
+        float panelW = 280f;
+        float panelH = 120f;
+        float panelX = Screen.width - panelW - 10f;
+        float panelY = 10f;
+
+        GUILayout.BeginArea(new Rect(panelX, panelY, panelW, panelH), boxStyle);
+        GUILayout.Label("📋 Görevler", headerStyle);
+        GUILayout.Space(3);
+
+        foreach (var quest in QuestSystem.Instance.AllQuests)
+        {
+            if (quest.state == QuestSystem.QuestState.Locked) continue;
+
+            string stateIcon = quest.state == QuestSystem.QuestState.Completed ? "✅" : "🔄";
+            string progressText = quest.state == QuestSystem.QuestState.Completed
+                ? "Tamamlandı!"
+                : $"{quest.progress * 100:F0}%";
+
+            string color = quest.state == QuestSystem.QuestState.Completed ? "#88FF88" : "#FFDD66";
+            GUILayout.Label($"<color={color}>{stateIcon} {quest.title}</color>", CreateRichLabel());
+            if (quest.state == QuestSystem.QuestState.Active)
+            {
+                GUILayout.Label($"   {quest.description}\n   İlerleme: {progressText}  Ödül: +{quest.reward}₺",
+                    smallLabelStyle);
+            }
         }
 
         GUILayout.EndArea();
